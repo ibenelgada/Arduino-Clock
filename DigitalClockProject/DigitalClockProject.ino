@@ -91,6 +91,27 @@ public:
 
 };
 
+void checkButtons(){
+  if(btn1.wasPressed()){
+    button1_callback();
+  }
+
+  if(btn2.wasPressed()){
+    button1_callback();
+  }
+
+  if(btn3.wasPressed()){
+    button1_callback();
+  }
+}
+
+void button1_callback(){
+     Clock::turnOffScreen();
+}
+void button2_callback(){}
+void button3_callback(){}
+
+
 void setup() {
 
   FastLED.addLeds<WS2812, LEDS_PIN, GRB>(Clock::leds, NUM_LEDS);
@@ -115,17 +136,7 @@ void setup() {
 
 void loop() {
 
-  if(btn1.wasPressed()){
-     Clock::turnOffScreen();
-  }
-
-  if(btn2.wasPressed()){
-
-  }
-
-  if(btn3.wasPressed()){
-
-  }
+  checkButtons();
 
   myTime.update();
 
