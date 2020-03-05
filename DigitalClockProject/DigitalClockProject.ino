@@ -91,26 +91,18 @@ public:
 
 };
 
-void checkButtons(){
-  if(btn1.wasPressed()){
-    button1_callback();
-  }
-
-  if(btn2.wasPressed()){
-    button1_callback();
-  }
-
-  if(btn3.wasPressed()){
-    button1_callback();
-  }
+enum class State{
+  TIME,
+  CHRONOMETER,
+  TIMER
 }
 
-void button1_callback(){
-     Clock::turnOffScreen();
-}
-void button2_callback(){}
-void button3_callback(){}
+void checkButtons();
+void button1_time_callback();
+void button2_time_callback();
+void button3_time_callback();
 
+State myState = State::TIME;
 
 void setup() {
 
@@ -141,3 +133,27 @@ void loop() {
   myTime.update();
 
 }
+
+void checkButtons(){
+  if(btn1.wasPressed()){
+    switch(myState){
+      case State::TIME:
+        button1_callback();
+      break;
+    }
+  }
+
+  if(btn2.wasPressed()){
+    button1_callback();
+  }
+
+  if(btn3.wasPressed()){
+    button1_callback();
+  }
+}
+
+void button1_time_callback(){
+     Clock::turnOffScreen();
+}
+void button2_time_callback(){}
+void button3_time_callback(){}
