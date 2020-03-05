@@ -76,12 +76,12 @@ public:
     m_s++;
 
     if(m_s >= 60){
-      m_s = m_s % 60;
+      m_s = 0;
       m_m++;
     }
 
     if(m_m >= 60){
-      m_m = m_m % 60;
+      m_m = 0;
       m_h++;
     }
     if(m_h >= 24){
