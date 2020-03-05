@@ -6,43 +6,93 @@
 #define BUTTON_2_PIN 6
 #define BUTTON_3_PIN 8
 
+#define BUZZER_PIN   3
 
+#define ROTARY_CLK_PIN  A0
+#define ROTARY_DT_PIN   A1
+#define ROTARY_SW_PIN   A2
 
-int m = 0;
-int h = 0;
+class Button{
 
-int left_in_second = 1000;
-
-void add1(){
-  m++;
-  if(m >= 60){
-    m = m % 60;
-    h++;
+public:
+  Button(int pin){
+    m_pin = pin;
+    m_state = HIGH;
+    pinMode(m_pin, INPUT_PULLUP);
   }
-  if(h >= 60){
-    h = 0;
+
+public:
+  int m_pin;
+  int m_state;
+public:
+
+  int getStateNow(){
+    return digitalRead(m_pin);
   }
-}
 
-int previous_state = HIGH;
-int current_state = HIGH;
+  bool wasPressed(){
+    bool wasPressed = (digitalRead(m_pin) == LOW && m_state == HIGH);
+    m_state = digitalRead(m_pin);
+    return wasPressed;
+  }
 
-void displaytime(){
-  Clock::turnOnTwoPoints();
-  Clock::displayMinutes(m);
-  Clock::displayHours(h);
-  Clock::updateScreen();
-}
+};
+
+class Time{
+
+public:
+  Time() : m_s(0), m_m(0), m_h(0), m_millis_to_second(1000) {
+    m_millis_last_update = millis();
+  }
+
+public:
+  int m_s;
+  int m_m;
+  int m_h;
+  int m_millis_to_second;
+  int m_millis_last_update;
+
+  void update(){
+    int delta = millis() - m_millis_last_update;
+    m_millis_last_update = millis();
+    m_millis_to_second -= delta;
+
+    if(m_millis_to_second <= 0){
+      m_millis_to_second += 1000;
+      addSecond();
+      updateScreen();
+
+    }
+  }
+
+  void updateScreen(){
+    Clock::turnOnTwoPoints();
+    Clock::displayMinutes(m_m);
+    Clock::displayHours(h_m);
+    Clock::updateScreen();
+  }
+
+  void addSecond(){
+    m_s++;
+
+    if(m_s >= 60){
+      m_s = m_s % 60;
+      m_m++;
+    }
+
+    if(m_m >= 60){
+      m_m = m_m % 60;
+      m_h++;
+    }
+    if(m_h >= 24){
+      m_h = 0;
+    }
+  }
+
+};
 
 void setup() {
-//  Serial.begin(9600);
-  pinMode(13, OUTPUT);
 
-  // button pin
-  pinMode(BUTTON_1_PIN, INPUT_PULLUP);
-  
-  digitalWrite(13, HIGH);
-  
   FastLED.addLeds<WS2812, LEDS_PIN, GRB>(Clock::leds, NUM_LEDS);
   // setting the mosfet pin as output to switch on and off the leds power
 
@@ -54,53 +104,29 @@ void setup() {
   // clearing the display of the clock
   Clock::clearScreenAndUpdate();
 
-  digitalWrite(13, LOW);
-}
 
-int last_start_time = 0;
-long long timeout = 5000;
+  Button btn1(BUTTON_1_PIN);
+  Button btn2(BUTTON_2_PIN);
+  Button btn3(BUTTON_3_PIN);
+
+  Time myTime;
+
+}
 
 void loop() {
 
-  current_state = digitalRead(BUTTON_1_PIN);
-  if(previous_state == HIGH && current_state == LOW){
-   // m = 0;
-    //h = 0;
-    //left_in_second = 1000;
-   // displaytime();
-  //  add1();
-    //Clock::turnOnScreen();
-      
-     digitalWrite(LEDS_SWITCH_PIN, HIGH);
-
-    //Clock::ClockOn = true;
+  if(btn1.wasPressed()){
+     Clock::turnOffScreen();
   }
 
-  int delta = millis() - last_start_time;
-  last_start_time = millis();
-  //left_in_second -= delta;
-
-  timeout -= delta;
-/*  
-  if(left_in_second <= 0){
-    left_in_second += 1000;
-    displaytime();
-    add1();
+  if(btn2.wasPressed()){
 
   }
-*/
-  if(timeout <= 0){
-    digitalWrite(LEDS_PIN, HIGH);
-    digitalWrite(LEDS_SWITCH_PIN, LOW);
-    //Clock::turnOffScreen();
-          digitalWrite(13, HIGH);
-  delay(50);
-  digitalWrite(13, LOW);
+
+  if(btn3.wasPressed()){
+
   }
-  
-  previous_state = current_state;
 
+  myTime.update();
 
-  
- // delay(500);
 }
