@@ -59,7 +59,7 @@ public:
 
     if(m_millis_to_second <= 0){
       m_millis_to_second += 1000;
-      addSecond();
+      addSeconds(1);
       updateScreen();
 
     }
@@ -68,24 +68,24 @@ public:
   void updateScreen(){
     Clock::turnOnTwoPoints();
     Clock::displayMinutes(m_m);
-    Clock::displayHours(h_m);
+    Clock::displayHours(m_h);
     Clock::updateScreen();
   }
 
-  void addSecond(){
-    m_s++;
+  void addSeconds(int s){
+    m_s += s;
 
     if(m_s >= 60){
-      m_s = 0;
-      m_m++;
+      m_m += m_s / 60;
+      m_s = m_s % 60;
     }
 
     if(m_m >= 60){
-      m_m = 0;
-      m_h++;
+      m_h += m_m / 60;
+      m_m = m_m % 60;
     }
     if(m_h >= 24){
-      m_h = 0;
+      m_h = m_h % 24;
     }
   }
 
@@ -95,7 +95,7 @@ enum class State{
   TIME,
   CHRONOMETER,
   TIMER
-}
+};
 
 void checkButtons();
 void button1_time_callback();
@@ -103,9 +103,15 @@ void button2_time_callback();
 void button3_time_callback();
 
 State myState = State::TIME;
+Time* myTime;
+
+Button* btn1;
+Button* btn2;
+Button* btn3;
 
 void setup() {
 
+  Serial.begin(9600);
   FastLED.addLeds<WS2812, LEDS_PIN, GRB>(Clock::leds, NUM_LEDS);
   // setting the mosfet pin as output to switch on and off the leds power
 
@@ -117,12 +123,13 @@ void setup() {
   // clearing the display of the clock
   Clock::clearScreenAndUpdate();
 
+  Clock::turnOnTwoPointsAndUpdate();
 
-  Button btn1(BUTTON_1_PIN);
-  Button btn2(BUTTON_2_PIN);
-  Button btn3(BUTTON_3_PIN);
+  btn1 = new Button(BUTTON_1_PIN);
+  btn2 = new Button(BUTTON_2_PIN);
+  btn3 = new Button(BUTTON_3_PIN);
 
-  Time myTime;
+  myTime = new Time();
 
 }
 
@@ -130,30 +137,44 @@ void loop() {
 
   checkButtons();
 
-  myTime.update();
+  myTime->update();
 
 }
 
 void checkButtons(){
-  if(btn1.wasPressed()){
+  if(btn1->wasPressed()){
     switch(myState){
       case State::TIME:
-        button1_callback();
+        button1_time_callback();
       break;
     }
   }
 
-  if(btn2.wasPressed()){
-    button1_callback();
+  if(btn2->wasPressed()){
+     switch(myState){
+      case State::TIME:
+        button2_time_callback();
+      break;
+    }
   }
 
-  if(btn3.wasPressed()){
-    button1_callback();
+  if(btn3->wasPressed()){
+     switch(myState){
+      case State::TIME:
+        button3_time_callback();
+      break;
+    }
   }
 }
 
 void button1_time_callback(){
-     Clock::turnOffScreen();
+   myTime->addSeconds(60);
+   myTime->updateScreen();
 }
-void button2_time_callback(){}
-void button3_time_callback(){}
+void button2_time_callback(){
+   myTime->addSeconds(3600);
+   myTime->updateScreen();
+}
+void button3_time_callback(){
+  Clock::switchScreenOnOff();
+}
