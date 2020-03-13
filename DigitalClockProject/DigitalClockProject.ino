@@ -177,4 +177,5 @@ void button2_time_callback(){
 }
 void button3_time_callback(){
   Clock::switchScreenOnOff();
+  myTime->updateScreen(); //fix to delay when turning on
 }
