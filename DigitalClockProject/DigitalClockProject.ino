@@ -12,18 +12,22 @@
 #define ROTARY_DT_PIN   A1
 #define ROTARY_SW_PIN   A2
 
+#define BUTTON_COOLOFF_TIME 10
+
 class Button{
 
 public:
   Button(int pin){
     m_pin = pin;
     m_state = HIGH;
+    m_last_pressed = 0;
     pinMode(m_pin, INPUT_PULLUP);
   }
 
 public:
   int m_pin;
   int m_state;
+  int m_last_pressed;
 public:
 
   int getStateNow(){
@@ -31,8 +35,13 @@ public:
   }
 
   bool wasPressed(){
+
+    if(millis() - m_last_pressed < BUTTON_COOLOFF_TIME) // too soon
+      return false;
+
     bool wasPressed = (digitalRead(m_pin) == LOW && m_state == HIGH);
     m_state = digitalRead(m_pin);
+    m_last_pressed = millis();
     return wasPressed;
   }
 
