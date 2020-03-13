@@ -17,6 +17,11 @@
 class Button{
 
 public:
+  int m_pin;
+  int m_state;
+  int m_last_pressed;
+
+public:
   Button(int pin){
     m_pin = pin;
     m_state = HIGH;
@@ -24,10 +29,6 @@ public:
     pinMode(m_pin, INPUT_PULLUP);
   }
 
-public:
-  int m_pin;
-  int m_state;
-  int m_last_pressed;
 public:
 
   int getStateNow(){
