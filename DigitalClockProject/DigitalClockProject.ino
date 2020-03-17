@@ -119,6 +119,7 @@ Time* myTime;
 Button* btn1;
 Button* btn2;
 Button* btn3;
+Button* rotaryBtn;
 
 void setup() {
 
@@ -139,6 +140,8 @@ void setup() {
   btn1 = new Button(BUTTON_1_PIN);
   btn2 = new Button(BUTTON_2_PIN);
   btn3 = new Button(BUTTON_3_PIN);
+  rotaryBtn = new Button(ROTARY_SW_PIN);
+
 
   myTime = new Time();
 
@@ -176,6 +179,14 @@ void checkButtons(){
       break;
     }
   }
+
+  if(rotaryBtn->wasPressed()){
+     switch(myState){
+      case State::TIME:
+        rotaryButton_time_callback();
+      break;
+    }
+  }
 }
 
 void button1_time_callback(){
@@ -188,5 +199,8 @@ void button2_time_callback(){
 }
 void button3_time_callback(){
   Clock::switchScreenOnOff();
-  myTime->updateScreen(); //fix to delay when turning on
+  myTime->updateScreen(); //fix to delay when turning on screen
+}
+void rotaryButton_time_callback(){
+  
 }
