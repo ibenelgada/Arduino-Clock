@@ -12,7 +12,8 @@
 #define ROTARY_DT_PIN   A1
 #define ROTARY_SW_PIN   A2
 
-#define BUTTON_COOLOFF_TIME 10
+#define BUTTON_COOLOFF_TIME 200
+#define ROTARY_COOLOFF_TIME 50
 
 class Button{
 
@@ -37,14 +38,70 @@ public:
 
   bool wasPressed(){
 
+    int newState = digitalRead(m_pin);
+
+    bool wasPressed = ( newState == LOW && m_state == HIGH);
+    m_state = newState;
+    
     if(millis() - m_last_pressed < BUTTON_COOLOFF_TIME) // too soon
       return false;
 
-    int newState = digitalRead(m_pin);
-    bool wasPressed = ( newState == LOW && m_state == HIGH);
-    m_state = newState;
-    m_last_pressed = millis();
+    if(wasPressed)
+      m_last_pressed = millis();
+      
     return wasPressed;
+  }
+
+};
+
+class RotaryEncoder{
+
+public:
+  enum{
+    NOT_ROTATED,
+    CLK,
+    CCLK
+  };
+
+public:
+  int m_pin_dt;
+  int m_pin_clk;
+  int m_state_dt;
+  unsigned long m_last_rotated;
+
+public:
+  RotaryEncoder(int pin_dt, int pin_clk){
+    m_pin_dt = pin_dt;
+    m_pin_clk = pin_clk;
+    m_state_dt = HIGH;
+    m_last_rotated = 0;
+    pinMode(m_pin_dt, INPUT_PULLUP);
+    pinMode(m_pin_clk, INPUT_PULLUP);
+}
+
+public:
+
+  int wasRotated(){
+
+    int newState = digitalRead(m_pin_dt);
+
+    bool wasPressed = ( newState == LOW && m_state_dt == HIGH);
+    m_state_dt = newState;
+    
+    if(millis() - m_last_rotated < ROTARY_COOLOFF_TIME) // too soon
+      return false;
+
+    if(wasPressed)
+      m_last_rotated = millis();
+
+    if(wasPressed){
+      if(digitalRead(m_pin_clk) == LOW)
+        return CLK;
+      else
+        return CCLK;
+    }
+    else
+      return NOT_ROTATED;
   }
 
 };
@@ -120,15 +177,16 @@ Button* btn1;
 Button* btn2;
 Button* btn3;
 Button* rotaryBtn;
+RotaryEncoder* rotary;
 
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(250000);
   FastLED.addLeds<WS2812, LEDS_PIN, GRB>(Clock::leds, NUM_LEDS);
   // setting the mosfet pin as output to switch on and off the leds power
 
   pinMode(LEDS_SWITCH_PIN, OUTPUT);
-
+  pinMode(13, OUTPUT);
   // turning on the screen
   Clock::turnOnScreen();
 
@@ -141,21 +199,21 @@ void setup() {
   btn2 = new Button(BUTTON_2_PIN);
   btn3 = new Button(BUTTON_3_PIN);
   rotaryBtn = new Button(ROTARY_SW_PIN);
-
+  rotary = new RotaryEncoder(ROTARY_DT_PIN, ROTARY_CLK_PIN);
 
   myTime = new Time();
 
 }
-
+int a = 0;
 void loop() {
 
-  checkButtons();
+  checkInputs();
 
   myTime->update();
 
 }
 
-void checkButtons(){
+void checkInputs(){
   if(btn1->wasPressed()){
     switch(myState){
       case State::TIME:
@@ -187,6 +245,25 @@ void checkButtons(){
       break;
     }
   }
+
+  int rotation = rotary->wasRotated();
+
+  if(rotation == RotaryEncoder::CLK){
+    switch(myState){
+      case State::TIME:
+        rotation_clk_time_callback();
+      break;
+    }
+  }
+
+  if(rotation == RotaryEncoder::CCLK){
+    switch(myState){
+      case State::TIME:
+        rotation_cclk_time_callback();
+      break;
+    }
+  }
+  
 }
 
 void button1_time_callback(){
@@ -202,5 +279,14 @@ void button3_time_callback(){
   myTime->updateScreen(); //fix to delay when turning on screen
 }
 void rotaryButton_time_callback(){
-  
+      Serial.println("b");
+}
+void rotation_clk_time_callback(){
+    ++a;
+    Serial.println(a);
+}
+
+void rotation_cclk_time_callback(){
+    --a;
+    Serial.println(a);
 }
