@@ -19,7 +19,7 @@ class Button{
 public:
   int m_pin;
   int m_state;
-  int m_last_pressed;
+  unsigned long m_last_pressed;
 
 public:
   Button(int pin){
@@ -40,8 +40,9 @@ public:
     if(millis() - m_last_pressed < BUTTON_COOLOFF_TIME) // too soon
       return false;
 
-    bool wasPressed = (digitalRead(m_pin) == LOW && m_state == HIGH);
-    m_state = digitalRead(m_pin);
+    int newState = digitalRead(m_pin);
+    bool wasPressed = ( newState == LOW && m_state == HIGH);
+    m_state = newState;
     m_last_pressed = millis();
     return wasPressed;
   }
