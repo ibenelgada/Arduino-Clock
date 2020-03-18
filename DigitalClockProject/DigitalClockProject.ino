@@ -204,7 +204,8 @@ void setup() {
   myTime = new Time();
 
 }
-int a = 0;
+
+
 void loop() {
 
   checkInputs();
@@ -279,14 +280,11 @@ void button3_time_callback(){
   myTime->updateScreen(); //fix to delay when turning on screen
 }
 void rotaryButton_time_callback(){
-      Serial.println("b");
+
 }
 void rotation_clk_time_callback(){
-    ++a;
-    Serial.println(a);
-}
 
+}
 void rotation_cclk_time_callback(){
-    --a;
-    Serial.println(a);
+
 }
